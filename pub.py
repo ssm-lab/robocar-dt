@@ -1,21 +1,32 @@
 import zmq
-## message sender
 
 context = zmq.Context()
 
 pub = context.socket(zmq.PUB)
 pub.bind("tcp://*:5555")
 print("starting publisher...")
-print("Enter a command to move car (w/s/a/d or q to quit)")
-comm = input("⇨ ")
+
+print("Enter 3 numbers separated by spaces or 'q' to quit")
+print("Order of input: linear speed, angular speed, duration")
+
 running = True
+
 while running:
-    print("Sending command: ", comm)
-    pub.send_string(comm)
-    if comm!= "q":
-        comm = input("⇨ ")
+    try:
+        command = input("⇨ ").split() 
+        print(command)
+    
+        if 'q' in command:
+            running = False
+        else: 
+            for i in range(len(command)):
+                command[i] = float(command[i])
+    except:
+        print("Invalid command format. Try again.")
+
     else:
-        running = False
+        print("Sending command to car")
+        pub.send_json(command)
         
 
 print("Quitting")

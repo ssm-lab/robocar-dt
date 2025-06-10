@@ -6,7 +6,7 @@ import time
 class CarController(Node):
     def __init__(self):
         super().__init__('car_controller')
-        self.publisher = self.create_publisher(Twist, '/controller/cmd_vel')
+        self.publisher = self.create_publisher(Twist, '/controller/cmd_vel', 10)
 
     def move(self, speed = 0.1, angSpeed = 0.0, duration = 1.0):
         msg = Twist()
@@ -14,35 +14,21 @@ class CarController(Node):
         msg.angular.z = angSpeed
         self.publisher.publish(msg)
 
-        if angSpeed > 0:
-            self.get_logger().info("Turning left...")
-        elif angSpeed < 0:
-            self.get_logger().info("Turning right...")
-
         time.sleep(duration)
 
         self.stop()
-
-    def drive(self, speed, duration):
-        self.move(speed = speed, angSpeed = 0.0, duration = duration)
-
-    def turn(self, speed, angSpeed , duration):
-        self.move(speed, angSpeed, duration)
 
     def stop(self):
         msg = Twist()
         msg.linear.x = 0.0
         msg.angular.z = 0.0
         self.publisher.publish(msg)
-        self.get_logger().info('Stopping...')
 
-def main(): ## 
-    rclpy.init() ###
+def main():
+    rclpy.init()
     controller = CarController()
 
-    controller.drive(speed = 0.1, duration = 2)
-    controller.turn(speed = 0.1, angSpeed = -0.4, duration = 2)
-    #controller.drive(speed=-0.1, duration = 2)
+    controller.move(speed = 0.3, angSpeed = -0.4, duration = 2)
     controller.stop()
 
     controller.destroy_node()
@@ -50,3 +36,4 @@ def main(): ##
 
 if __name__ == '__main__':
     main()
+
