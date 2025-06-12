@@ -9,14 +9,22 @@ class CarController(Node):
         self.publisher = self.create_publisher(Twist, '/controller/cmd_vel', 10)
 
     def move(self, speed = 0.1, angSpeed = 0.0, duration = 1.0):
-        msg = Twist()
-        msg.linear.x = speed
-        msg.angular.z = angSpeed
-        self.publisher.publish(msg)
+        try:
+            msg = Twist()
+            msg.linear.x = speed
+            msg.angular.z = angSpeed
+            self.publisher.publish(msg)
+            
+            logMsg = "Speed: " + str(speed) + " m/s. Angular speed: " + str(angSpeed) + " rad/s. Duration: " + str(duration) + " s."
+            self.get_logger().info(logMsg)
+            time.sleep(duration)
 
-        time.sleep(duration)
-
-        self.stop()
+        except Exception as e:
+            errorMsg = "Stopping car, something went wrong: " + str(e)
+            self.get_logger().error(errorMsg)
+        
+        finally:
+            self.stop()
 
     def stop(self):
         msg = Twist()
