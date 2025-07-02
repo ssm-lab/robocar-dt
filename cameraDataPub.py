@@ -12,21 +12,15 @@ class ImageSubscriber(Node):
         pub = context.socket(zmq.PUB)
         pub.bind("tcp://*:5555")
 
-        self.sub = self.create_subscription(Image, '/depth_cam/rgb/image_raw', self.callback, 10)
-
-    def callback(self, msg):
-        self.sendImage(msg.data)
+        self.sub = self.create_subscription(Image, '/depth_cam/rgb/image_raw', self.sendData, 10)
 
     def sendImage(self, msg):
-        
-        self.pub.send_string("cat")
+        self.pub.send(msg.data)
         print("Message sent")
-        
 
 def main():
     rclpy.init()
     node = ImageSubscriber()
-
     rclpy.spin(node) 
     node.destroy_node()
     rclpy.shutdown()
