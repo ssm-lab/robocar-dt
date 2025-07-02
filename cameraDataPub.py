@@ -1,4 +1,4 @@
-## This program will subscribe to the appropriate topic to get camera data and use zmq to send that data to another computer
+# This program will run on the pi to subscribe to the appropriate topic to get camera data and use zmq to send that data to another computer
 
 import rclpy
 import zmq
@@ -19,7 +19,7 @@ class ImageSubscriber(Node):
 
     def sendImage(self, msg):
         
-        self.pub.send(msg)
+        self.pub.send_string("cat")
         print("Message sent")
         
 

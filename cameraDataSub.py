@@ -1,3 +1,5 @@
+# This program is the subscriber receiving the camera data
+
 import zmq
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
