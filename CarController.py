@@ -36,7 +36,7 @@ def main():
     rclpy.init()
     controller = CarController()
 
-    controller.move(speed = 0.3, angSpeed = -0.4, duration = 2)
+    controller.move(speed = 0.3, angSpeed = -0.4, duration = 2.0)
     controller.stop()
 
     controller.destroy_node()
