@@ -13,8 +13,7 @@ running = True
 
 while running:
     try:
-        command = input("⇨ ").split() 
-        print(command)
+        command = input("⇨ ").split()
     
         if 'q' in command:
             running = False
