@@ -12,7 +12,7 @@ User subscriber:
 class UserSubscriber(Subscriber):
 
     def __init__(self):
-        super().__init__("5557")
+        super().__init__("192.168.149.1","5557")
         
     def subscriberAction(self):
         receviedMessage = self._subscriber.recv()
