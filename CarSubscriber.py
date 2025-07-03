@@ -12,7 +12,7 @@ Car subscriber:
 class CarSubscriber(Subscriber):
 
     def __init__(self):
-        super().__init__("5558")
+        super().__init__("192.168.149.150","5558")
         
     def subscriberAction(self):
         receivedMessage = self._subscriber.recv_json()

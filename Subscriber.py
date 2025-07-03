@@ -11,12 +11,12 @@ Parent Subscriber class. Can be implemented on either the raspberry pi or the us
 
 class Subscriber():
 
-    def __init__(self, port):
+    def __init__(self, publisherIP, port):
         self.ctx = zmq.Context()
         self._subscriber = self.ctx.socket(zmq.SUB)
         print("Starting sub")
         self._subscriber.subscribe("")
-        self._subscriber.connect(f"tcp://localhost:{port}")
+        self._subscriber.connect(f"tcp://{publisherIP}:{port}")
 
         self._poller = zmq.Poller()
         self._poller.register(self._subscriber, zmq.POLLIN)
