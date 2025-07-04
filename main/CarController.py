@@ -5,6 +5,7 @@ import time
 
 class CarController(Node):
     def __init__(self):
+        rclpy.init()
         super().__init__('car_controller')
         self.publisher = self.create_publisher(Twist, '/controller/cmd_vel', 10)
 
@@ -32,15 +33,15 @@ class CarController(Node):
         msg.angular.z = 0.0
         self.publisher.publish(msg)
 
+    def end(self):
+        self.destroy_node()
+        rclpy.shutdown()
+
 def main():
-    rclpy.init()
     controller = CarController()
-
+    time.sleep(3)
     controller.move(speed = 0.3, angSpeed = -0.4, duration = 2.0)
-    controller.stop()
-
-    controller.destroy_node()
-    rclpy.shutdown()
+    controller.end()
 
 if __name__ == '__main__':
     main()
