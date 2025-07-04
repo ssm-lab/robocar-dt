@@ -14,28 +14,10 @@ class Subscriber():
     def __init__(self, publisherIP, port):
         self.ctx = zmq.Context()
         self._subscriber = self.ctx.socket(zmq.SUB)
-        print("Starting sub")
+        #print("Starting sub")
         self._subscriber.subscribe("")
         self._subscriber.connect(f"tcp://{publisherIP}:{port}")
-
-        self._poller = zmq.Poller()
-        self._poller.register(self._subscriber, zmq.POLLIN)
+        print("connected")
     
     def subscribe(self):
-        logging.debug("Receiving messages")
-        
-        alarm = time.time() + 1.
-        while True:
-            tickless = 1000 * max(0, alarm - time.time())
-            try:
-                items = dict(self._poller.poll(tickless))
-            except:
-                break  # Interrupted
-    
-            if self._subscriber in items:
-                self.subscriberAction()
-    
-        logging.debug("Interrupted")
-
-    def subscriberAction(self):
         raise NotImplementedError

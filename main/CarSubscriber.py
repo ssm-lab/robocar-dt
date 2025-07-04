@@ -14,9 +14,14 @@ class CarSubscriber(Subscriber):
     def __init__(self):
         super().__init__("192.168.149.150","5558")
         
-    def subscriberAction(self):
-        receivedMessage = self._subscriber.recv_json()
-        print(receivedMessage) ## Do other tasks with received message
+    def subscribe(self):
+        running = True
+        while running:
+            receivedMessage = self._subscriber.recv_json()
+            print(receivedMessage) ## Do other tasks with received message
+
+            if 'q' in receivedMessage:
+                running = False
 
 
 if __name__ == '__main__':
