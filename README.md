@@ -1,9 +1,9 @@
 # Digital Twin of Raspberry Pi-Based Robot Car
-Status: In progress
-Author: Adwita Kashyap
+Status: In progress  
+Author: Adwita Kashyap  
 Supervisor: Dr. Istvan David
 ## Introduction
-This research project aims to build a digital twin of a sensor-equipped robot car using real-time data streaming. The digital twin is a virtual replica that reflects the physical car’s behavior and sensor outputs, while also enabling control of the car based on that information.
+This research project aims to build a digital twin of a sensor-equipped robot car using real-time data streaming. The digital twin is a virtual replica that reflects the physical car’s behavior and sensor outputs, while also enabling control of the car based on that information.  
 A key feature of this system is its split design, which allows the robot to run ROS 2, while the user interacts with it from another computer without needing to install ROS. The two systems communicate in real time using ZeroMQ.
 ## Software
 - Language: Python
