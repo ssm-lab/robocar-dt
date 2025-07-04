@@ -3,6 +3,16 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import time
 
+__author__ = "Adwita Kashyap"
+__credits__ = "Istvan David"
+
+"""
+Car controller: 
+- Runs on the car's raspberry pi
+- Turns control commands received by CarSubscriber into Twist messages for ROS
+- Allows for the control commands to actually move the car
+"""
+
 class CarController(Node):
     def __init__(self):
         rclpy.init()
