@@ -1,4 +1,5 @@
 from Subscriber import Subscriber
+from CarController import CarController
 
 __author__ = "Adwita Kashyap"
 __credits__ = "Istvan David"
@@ -15,13 +16,16 @@ class CarSubscriber(Subscriber):
         super().__init__("192.168.149.150","5558")
         
     def subscribe(self):
+        controller = CarController()
         running = True
         while running:
             receivedMessage = self._subscriber.recv_json()
-            print(receivedMessage) ## Do other tasks with received message
 
             if 'q' in receivedMessage:
+                controller.end()
                 running = False
+            else:
+                controller.move(speed = receivedMessage[0], angSpeed = receivedMessage[1], duration = receivedMessage[2])
 
 
 if __name__ == '__main__':
