@@ -1,5 +1,6 @@
 import imagezmq
 import cv2
+import numpy as np
 
 __author__ = "Adwita Kashyap"
 __credits__ = "Istvan David"
@@ -17,17 +18,15 @@ class UserSubscriber():
         
     def subscribe(self):
         running = True
-
         while running:
-            print("listening")
-            msg, image = self.imageHub.recv_image()
-            
-            cv2.imshow("live", image)
-            print(cv2.mean(image))
+            title, buffer = self.imageHub.recv_jpg() 
+            buffer = bytes(buffer)
+            image = cv2.imdecode(np.frombuffer(buffer, dtype=np.uint8), cv2.IMREAD_COLOR)
+            cv2.imshow(title, image)
 
+            # Press any key to exit
             if cv2.waitKey(1) > -1:
                 running = False
-                print("Stopping")
             
         print("done")
         cv2.destroyAllWindows()
