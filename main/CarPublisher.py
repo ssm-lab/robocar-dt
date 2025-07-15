@@ -24,9 +24,16 @@ class CarPublisher(Node):
         self.sub = self.create_subscription(Image, '/depth_cam/rgb/image_raw', self.publish, 10) # ROS topic subscriber to get image
 
     def publish(self, image):
+        # convert image to jpg format
         cvImage = self.bridge.imgmsg_to_cv2(image, "bgr8")
         _, jpgImage = cv2.imencode('.jpg', cvImage)
-        self.pub.send_jpg("Camera Feed", jpgImage.tobytes())
+
+        # get timestamp from image header
+        timestamp = image.header.stamp.sec + image.header.stamp.nanosec*1e-9
+        print(timestamp)
+
+        # publish information
+        self.pub.send_jpg(timestamp, jpgImage.tobytes())
 
 def main():
     rclpy.init()
