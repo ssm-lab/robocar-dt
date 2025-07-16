@@ -2,7 +2,9 @@ import cv2
 import time
 import imagezmq
 import numpy as np
+from math import ceil
 from ultralytics import YOLO
+
 __author__ = "Adwita Kashyap"
 __credits__ = "Istvan David"
 
@@ -25,12 +27,13 @@ class UserSubscriber():
         fps = 30 ## from hardware stats
         allowedTime = 1/fps # Time allowed for processing each frame
 
-        path = "C:/Users/adwit/runs/detect/train2/weights/best.pt"
+        path = "C:/Users/adwit/runs/detect/train6/weights/best.pt"
         model = YOLO(path)
 
         while running:
+            # receives frames- drops without further processing if there is a lag
             for i in range (framesToSkip + 1):
-                timestamp, buffer = self.imageHub.recv_jpg() 
+                _, buffer = self.imageHub.recv_jpg() 
 
             startTime = time.time()
 
@@ -44,7 +47,7 @@ class UserSubscriber():
 
             ## Find number of frames to skip
             if elapsedTime> allowedTime:
-                framesToSkip = int((elapsedTime - allowedTime) * fps) 
+                framesToSkip = ceil((elapsedTime - allowedTime) * fps)
             else:
                 framesToSkip = 0
 
