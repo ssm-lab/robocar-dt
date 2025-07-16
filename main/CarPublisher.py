@@ -28,12 +28,8 @@ class CarPublisher(Node):
         cvImage = self.bridge.imgmsg_to_cv2(image, "bgr8")
         _, jpgImage = cv2.imencode('.jpg', cvImage)
 
-        # get timestamp from image header
-        timestamp = image.header.stamp.sec + image.header.stamp.nanosec*1e-9
-        print(timestamp)
-
         # publish information
-        self.pub.send_jpg(timestamp, jpgImage.tobytes())
+        self.pub.send_jpg("", jpgImage.tobytes())
 
 def main():
     rclpy.init()
