@@ -1,0 +1,7 @@
+path: C:/Users/adwit/Downloads/Digital Twins/training-data
+
+train: train/images
+val: valid/images
+
+nc: 3
+names: ['bluecube', 'green cube', 'red cube']
