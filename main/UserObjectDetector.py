@@ -12,11 +12,12 @@ __credits__ = "Istvan David"
 """
 User subscriber: 
 - Runs on the user's device
-- Receives images from CarPublisher.py
+- Receives images from CarPublisher.py (pub/sub)
 - Runs object detection using YOLO on received images
+- Sends coordinates of bounding box to CarRoutePlanner.py (req/rep)
 """
 
-class UserSubscriber():
+class ObjectDetector():
 
     def __init__(self):
         self.imageHub = imagezmq.ImageHub(open_port='tcp://192.168.149.1:5557', REQ_REP = False)
@@ -29,30 +30,38 @@ class UserSubscriber():
         self.model = YOLO("C:/Users/adwit/runs/detect/train9/weights/best.pt")
         
     def processFrame(self, buffer):
-        
+        """Receives buffer frame, converts to openCV format, runs object detection, and displays the frame.
+        Returns the number of frames to skip to avoid lag and coordinates of bounding box"""
         fps = 30 ## from hardware stats
         allowedTime = 1/fps # Time allowed for processing each frame
-        
-        # Display processed frame + get processing time
         startTime = time.time()
 
+        # Display processed frame
         buffer = bytes(buffer)
         image = cv2.imdecode(np.frombuffer(buffer, dtype=np.uint8), cv2.IMREAD_COLOR)
         results = self.model.predict(image)[0]
         image = results.plot()
         cv2.imshow("live", image)
 
+        # Get bounding box data
+        try:
+            bbox = results.boxes.xyxy[0].tolist()
+        except:
+            # In case of no detections
+            bbox = [0,0,0,0]
+        
+        # Calculate processing time
         elapsedTime = time.time() - startTime
 
-        # Find number of frames to skip
+        # Find number of frames to skip based on processing time
         if elapsedTime > allowedTime:
             framesToSkip = ceil((elapsedTime - allowedTime) * fps)
         else:
             framesToSkip = 0
 
-        return framesToSkip
+        return framesToSkip, bbox
 
-    def subscribe(self):
+    def detect(self):
         running = True
         firstFrame = True
         framesToSkip = 0
@@ -63,19 +72,20 @@ class UserSubscriber():
             for i in range (framesToSkip + 1):
                 _, buffer = self.imageHub.recv_jpg() 
 
-            framesToSkip = self.processFrame(buffer)
+            framesToSkip, bbox = self.processFrame(buffer)
 
+            # send bbox to car if car is ready
             if firstFrame:
-                self.req.send_string(command)
-                print("command sent")
+                self.req.send_json(bbox)
+                print(f"sent: {bbox}")
                 firstFrame = False
 
             items = dict(self.poller.poll(1))
             if self.req in items:
                 reply = self.req.recv_string()
                 print(reply)
-                self.req.send_string(command)
-                print("command sent") 
+                self.req.send_json(bbox)
+                print(f"sent: {bbox}")
 
             # Press any key to exit
             if cv2.waitKey(1) > -1:
@@ -85,5 +95,5 @@ class UserSubscriber():
 
 
 if __name__ == '__main__':
-    subscriber = UserSubscriber()
-    subscriber.subscribe()
+    objectDetector = ObjectDetector()
+    objectDetector.detect()
