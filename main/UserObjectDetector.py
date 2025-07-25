@@ -45,11 +45,16 @@ class ObjectDetector():
 
         # Get bounding box data
         try:
-            bbox = results.boxes.xyxy[0].tolist()
-        except:
+            confScores = results.boxes.conf.tolist()
+            maxConf = max(confScores)
+            maxIndex = confScores.index(maxConf)
+            bbox = results.boxes.xyxy[maxIndex].tolist()
+        except Exception as e:
+            print(e)
             # In case of no detections
             bbox = [0,0,0,0]
         
+        print(results.boxes.cls[maxIndex])
         # Calculate processing time
         elapsedTime = time.time() - startTime
 
