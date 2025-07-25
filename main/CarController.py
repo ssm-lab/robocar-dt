@@ -15,7 +15,6 @@ Car controller:
 
 class CarController(Node):
     def __init__(self):
-        rclpy.init()
         super().__init__('car_controller')
         self.publisher = self.create_publisher(Twist, '/controller/cmd_vel', 10)
 
@@ -48,6 +47,7 @@ class CarController(Node):
         rclpy.shutdown()
 
 def main():
+    rclpy.init()
     controller = CarController()
     time.sleep(3)
     controller.move(speed = 0.3, angSpeed = -0.4, duration = 2.0)
