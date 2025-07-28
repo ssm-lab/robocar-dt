@@ -66,20 +66,20 @@ class CarRoutePlanner(Node):
 
         # If depth camera cannot sense cube
         if depthSum == 0:
-            linearSpeed = 0.1 #debug
-            angularSpeed = 0.1
-            travelTime = 0.5
+            distance = 0.5
             reply = "searching"
         else:
             distance = depthSum/ (numOfElements*1000) - 0.2 #in m
-            turnRadius = distance/(2*math.sin(angle))
-            travelTime = 2*turnRadius*angle/linearSpeed
-            angularSpeed = linearSpeed/turnRadius
             reply = "target reached"
+        
+        turnRadius = distance/(2*math.sin(angle))
+        travelTime = 2*turnRadius*angle/linearSpeed
+        angularSpeed = linearSpeed/turnRadius
         
         if rightTurn:
             angularSpeed = -angularSpeed
 
+        #permission = input(f"Going to move at speed = {linearSpeed} m/s and  angular speed = {angularSpeed} rad/s for {travelTime} s.")
         self.controller.move(linearSpeed, angularSpeed, travelTime)
 
         return (reply)
@@ -87,7 +87,10 @@ class CarRoutePlanner(Node):
 def main():
     rclpy.init()
     planner = CarRoutePlanner()
-    rclpy.spin(planner) 
+    try:
+        rclpy.spin(planner) 
+    except KeyboardInterrupt:
+        print("Program exited by user.")
     planner.controller.end()
 
 if __name__ == '__main__':
