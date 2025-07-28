@@ -21,7 +21,6 @@ class ObjectDetector():
 
     def __init__(self):
         self.imageHub = imagezmq.ImageHub(open_port='tcp://192.168.149.1:5557', REQ_REP = False)
-        
         self.ctx = zmq.Context()
         self.req = self.ctx.socket(zmq.REQ)
         self.req.bind("tcp://*:5558")
@@ -49,12 +48,10 @@ class ObjectDetector():
             maxConf = max(confScores)
             maxIndex = confScores.index(maxConf)
             bbox = results.boxes.xyxy[maxIndex].tolist()
-        except Exception as e:
-            print(e)
+        except:
             # In case of no detections
             bbox = [0,0,0,0]
         
-        print(results.boxes.cls[maxIndex])
         # Calculate processing time
         elapsedTime = time.time() - startTime
 
@@ -70,7 +67,6 @@ class ObjectDetector():
         running = True
         firstFrame = True
         framesToSkip = 0
-        command = "dummy command"
 
         while running:
             # receives frames- drops without further processing if there is a lag
@@ -89,8 +85,11 @@ class ObjectDetector():
             if self.req in items:
                 reply = self.req.recv_string()
                 print(reply)
-                self.req.send_json(bbox)
-                print(f"sent: {bbox}")
+                if reply == "target reached":
+                    running = False
+                else:
+                    self.req.send_json(bbox)
+                    print(f"sent: {bbox}")
 
             # Press any key to exit
             if cv2.waitKey(1) > -1:
