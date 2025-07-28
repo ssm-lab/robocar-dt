@@ -34,11 +34,9 @@ class CarPublisher(Node):
 def main():
     rclpy.init()
     carPublisher = CarPublisher()
-    try:
-        rclpy.spin(carPublisher) 
-    except KeyboardInterrupt:
-        print("Program exited by user.")
+    rclpy.spin(carPublisher) 
     carPublisher.destroy_node()
+    rclpy.shutdown()
 
         
 if __name__ == '__main__':
