@@ -28,7 +28,7 @@ class CarRoutePlanner(Node):
         self.poller = zmq.Poller()
         self.poller.register(self.rep, zmq.POLLIN)
 
-        self.sub = self.create_subscription(Image, '/depth_cam/depth/image_raw', self.subscribe, 1) # ROS topic subscriber to get image
+        self.sub = self.create_subscription(Image, '/depth_cam/depth/image_raw', self.subscribe, 1)
         self.bridge = CvBridge()
 
         self.controller = CarController()
@@ -38,56 +38,42 @@ class CarRoutePlanner(Node):
 
         if self.rep in items:
             bbox = self.rep.recv_json()
-            print(f"bbox: {bbox}") 
-            reply = self.plan(msg, bbox)
+            image = self.bridge.imgmsg_to_cv2(msg)
+            reply = self.navigate(image, bbox)
             self.rep.send_string(reply)
         
-    def plan(self, msg, bbox):
+    def navigate(self, image, bbox):
         cameraFOV = 58.4 # Camera's horizontal field of view (degrees)
         frameWidth = 640 # pixels
-        xCentre = (bbox[0] + bbox[2])/2
         linearSpeed = 0.3
 
+        depthSum = 0 # in mm
+        numOfElements = 0
+        xCentre = (bbox[0] + bbox[2])/2
         angle = math.radians((xCentre - frameWidth/2) * cameraFOV/frameWidth)
+
         if angle > 0:
             rightTurn = True
         else:
             angle = abs(angle)
             rightTurn = False
 
-        print(f"angle: {angle}. Right turn: {rightTurn}")
-
-        depthSum = 0 # in mm
-        numOfElements = (int(bbox[2]) - int(bbox[0])) * (int(bbox[3] - int(bbox[1])))
-
-        image = self.bridge.imgmsg_to_cv2(msg)
-        print(f"cv image shape (bridge): {image.shape}")
-
         for x in range(int(bbox[0]), int(bbox[2])):
             for y in range (int(bbox[1]), int(bbox[3])):
-                print(f"{image[y][x]}, ", end="")
-                depthSum += image[y][x]
-            print()
+                if image[y][x] != 0:
+                    depthSum += image[y][x]
+                    numOfElements += 1
 
-        averageDepth = depthSum/ (numOfElements*1000) #in m
-        turnRadius = averageDepth/(2*math.sin(angle))
+        distance = depthSum/ (numOfElements*1000) - 0.2 #in m
+        turnRadius = distance/(2*math.sin(angle))
+        travelTime = 2*turnRadius*angle/linearSpeed
         angularSpeed = linearSpeed/turnRadius
-
-        print(f"average depth: {averageDepth}")
-        print(f"turn radius: {turnRadius}")
-        
         
         if rightTurn:
             angularSpeed = -angularSpeed
-        print(f"angular: {angularSpeed}") #debug
 
-        travelTime = 2*turnRadius*angle/linearSpeed
-        print(f"Time: {travelTime}") #debug
-        
-        #self.controller.move(linearSpeed, angularSpeed, travelTime)
-        print(f"Command (sending paused for now): Linear = {linearSpeed}. Angular = {angularSpeed}. Time = {travelTime}")
-
-        return ("target reached!")
+        self.controller.move(linearSpeed, angularSpeed, travelTime)
+        return ("target reached")
     
 def main():
     rclpy.init()
