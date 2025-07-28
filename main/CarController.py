@@ -44,7 +44,6 @@ class CarController(Node):
 
     def end(self):
         self.destroy_node()
-        rclpy.shutdown()
 
 def main():
     rclpy.init()
