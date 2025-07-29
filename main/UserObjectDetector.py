@@ -50,7 +50,7 @@ class ObjectDetector():
             bbox = results.boxes.xyxy[maxIndex].tolist()
         except:
             # In case of no detections
-            bbox = [0,0,0,0]
+            bbox = None
         
         # Calculate processing time
         elapsedTime = time.time() - startTime
@@ -61,9 +61,10 @@ class ObjectDetector():
         else:
             framesToSkip = 0
 
+        print(results.boxes.cls[maxIndex])
         return framesToSkip, bbox
 
-    def detect(self):
+    def communicate(self):
         running = True
         firstFrame = True
         framesToSkip = 0
@@ -84,10 +85,10 @@ class ObjectDetector():
             items = dict(self.poller.poll(1))
             if self.req in items:
                 reply = self.req.recv_string()
-                print(reply)
+                print(f"REPLY FROM CAR: {reply}")
                 if reply == "target reached":
                     running = False
-                else:
+                elif bbox is not None:
                     self.req.send_json(bbox)
                     print(f"sent: {bbox}")
 
@@ -100,4 +101,4 @@ class ObjectDetector():
 
 if __name__ == '__main__':
     objectDetector = ObjectDetector()
-    objectDetector.detect()
+    objectDetector.communicate()
