@@ -38,8 +38,12 @@ class CarRoutePlanner(Node):
 
         if self.rep in items:
             bbox = self.rep.recv_json()
-            image = self.bridge.imgmsg_to_cv2(msg)
-            reply = self.navigate(image, bbox)
+            if bbox is None:
+                self.controller.stop()
+                reply = "waiting for detection"
+            else:
+                image = self.bridge.imgmsg_to_cv2(msg)
+                reply = self.navigate(image, bbox)
             self.rep.send_string(reply)
         
     def navigate(self, image, bbox):
@@ -47,16 +51,13 @@ class CarRoutePlanner(Node):
         frameWidth = 640 # pixels
         linearSpeed = 0.3
 
-        depthSum = 0 # in mm
-        numOfElements = 0
+        # Angle between car and object
         xCentre = (bbox[0] + bbox[2])/2
         angle = math.radians((xCentre - frameWidth/2) * cameraFOV/frameWidth)
 
-        if angle > 0:
-            rightTurn = True
-        else:
-            angle = abs(angle)
-            rightTurn = False
+        # Distance between car an object
+        depthSum = 0 # in mm
+        numOfElements = 0
 
         for x in range(int(bbox[0]), int(bbox[2])):
             for y in range (int(bbox[1]), int(bbox[3])):
@@ -73,13 +74,12 @@ class CarRoutePlanner(Node):
             distance = depthSum/ (numOfElements*1000) - 0.2 #in m
             reply = "target reached"
 
+        # Calculate movement
         turnRadius = distance/(2*math.sin(angle))
-        travelTime = 2*turnRadius*angle/linearSpeed
-        angularSpeed = linearSpeed/turnRadius
-        
-        if rightTurn:
-            angularSpeed = -angularSpeed
-            
+        travelTime = abs(2*turnRadius*angle/linearSpeed)
+        angularSpeed = -linearSpeed/turnRadius
+
+        # Move
         self.controller.move(linearSpeed, angularSpeed, travelTime)
 
         if reply == "target reached":

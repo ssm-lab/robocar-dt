@@ -47,6 +47,7 @@ class ObjectDetector():
             confScores = results.boxes.conf.tolist()
             maxConf = max(confScores)
             maxIndex = confScores.index(maxConf)
+            print(results.boxes.cls[maxIndex])
             bbox = results.boxes.xyxy[maxIndex].tolist()
         except:
             # In case of no detections
@@ -61,7 +62,6 @@ class ObjectDetector():
         else:
             framesToSkip = 0
 
-        print(results.boxes.cls[maxIndex])
         return framesToSkip, bbox
 
     def communicate(self):
@@ -88,7 +88,7 @@ class ObjectDetector():
                 print(f"REPLY FROM CAR: {reply}")
                 if reply == "target reached":
                     running = False
-                elif bbox is not None:
+                else:
                     self.req.send_json(bbox)
                     print(f"sent: {bbox}")
 
