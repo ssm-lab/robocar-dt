@@ -58,8 +58,6 @@ class CarRoutePlanner(Node):
             angle = abs(angle)
             rightTurn = False
 
-        print(type(image))
-
         for x in range(int(bbox[0]), int(bbox[2])):
             for y in range (int(bbox[1]), int(bbox[3])):
                 if image[y][x] != 0:
@@ -68,7 +66,7 @@ class CarRoutePlanner(Node):
 
         # If depth camera cannot sense cube
         if depthSum == 0:
-            distance = 0.3
+            distance = 0.5
             reply = "searching"
             print(reply)
         else:
@@ -81,9 +79,11 @@ class CarRoutePlanner(Node):
         
         if rightTurn:
             angularSpeed = -angularSpeed
-
-        permission = input(f"Going to move at speed = {linearSpeed} m/s and angular speed = {angularSpeed} rad/s for time = {travelTime} s.")
+            
         self.controller.move(linearSpeed, angularSpeed, travelTime)
+
+        if reply == "target reached":
+            self.controller.stop()
 
         return (reply)
     
