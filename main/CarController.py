@@ -25,15 +25,13 @@ class CarController(Node):
             msg.angular.z = angSpeed
             self.publisher.publish(msg)
             
-            logMsg = "Speed: " + str(speed) + " m/s. Angular speed: " + str(angSpeed) + " rad/s. Duration: " + str(duration) + " s."
+            logMsg = f"Speed: {speed} m/s. Angular speed: {angSpeed} rad/s. Duration: {duration} s."
             self.get_logger().info(logMsg)
             time.sleep(duration)
 
         except Exception as e:
             errorMsg = "Stopping car, something went wrong: " + str(e)
             self.get_logger().error(errorMsg)
-        
-        finally:
             self.stop()
 
     def stop(self):
