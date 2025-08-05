@@ -100,8 +100,10 @@ class CarRoutePlanner(Node):
 def main():
     rclpy.init()
     planner = CarRoutePlanner()
-    rclpy.spin(planner) 
-    planner.controller.end()
+    try:
+        rclpy.spin(planner)
+    except KeyboardInterrupt:
+        print("Shutting down.")
 
 if __name__ == '__main__':
     main()
