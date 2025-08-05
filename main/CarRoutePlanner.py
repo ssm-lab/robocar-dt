@@ -32,6 +32,7 @@ class CarRoutePlanner(Node):
         self.bridge = CvBridge()
 
         self.controller = CarController()
+        self.radius = 0.5
 
     def subscribe(self, msg):
         items = dict(self.poller.poll(1))
@@ -39,8 +40,7 @@ class CarRoutePlanner(Node):
         if self.rep in items:
             bbox = self.rep.recv_json()
             if bbox is None:
-                self.controller.stop()
-                reply = "waiting for detection"
+                reply = self.explore()
             else:
                 image = self.bridge.imgmsg_to_cv2(msg)
                 reply = self.navigate(image, bbox)
@@ -86,7 +86,17 @@ class CarRoutePlanner(Node):
             self.controller.stop()
 
         return (reply)
-    
+
+    def explore(self):
+        linearSpeed = 0.1
+        angularSpeed = linearSpeed/self.radius
+        travelTime = 0.2
+        reply = "exploring"
+
+        self.controller.move(linearSpeed, angularSpeed, travelTime)
+        return reply
+        
+
 def main():
     rclpy.init()
     planner = CarRoutePlanner()
