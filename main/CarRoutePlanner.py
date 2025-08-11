@@ -1,7 +1,6 @@
 import zmq
 import math
 import rclpy
-import numpy as np
 from rclpy.node import Node
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -32,7 +31,10 @@ class CarRoutePlanner(Node):
         self.bridge = CvBridge()
 
         self.controller = CarController()
-        self.radius = 0.5
+        self.exploreRadius = 0.25
+        self.exploreCount = 0
+
+        self.sawCube = False
 
     def subscribe(self, msg):
         items = dict(self.poller.poll(1))
@@ -41,9 +43,13 @@ class CarRoutePlanner(Node):
             bbox = self.rep.recv_json()
             if bbox is None:
                 reply = self.explore()
+                self.sawCube = False
             else:
+                self.exploreRadius = 0.5
+                self.exploreCount = 0
                 image = self.bridge.imgmsg_to_cv2(msg)
                 reply = self.navigate(image, bbox)
+                self.sawCube = True
             self.rep.send_string(reply)
         
     def navigate(self, image, bbox):
@@ -68,13 +74,14 @@ class CarRoutePlanner(Node):
         # If depth camera cannot sense cube
         if depthSum == 0:
             distance = 0.5
-            reply = "searching"
+            reply = "navigating without depth"
             print(reply)
         else:
             distance = depthSum/ (numOfElements*1000) - 0.2 #in m
             reply = "target reached"
+        print(f"Distance to object = {distance}")
 
-        # Calculate movement
+        # Calculate movement command
         turnRadius = distance/(2*math.sin(angle))
         travelTime = abs(2*turnRadius*angle/linearSpeed)
         angularSpeed = -linearSpeed/turnRadius
@@ -88,12 +95,26 @@ class CarRoutePlanner(Node):
         return (reply)
 
     def explore(self):
-        linearSpeed = 0.1
-        angularSpeed = linearSpeed/self.radius
-        travelTime = 0.2
-        reply = "exploring"
+        if self.sawCube:
+            reply = "target reached"
+            self.controller.stop()
 
-        self.controller.move(linearSpeed, angularSpeed, travelTime)
+        else: 
+            linearSpeed = 0.1
+            angularSpeed = linearSpeed/self.exploreRadius
+            travelTime = 0.2
+            reply = "exploring"
+            
+            self.controller.move(linearSpeed, angularSpeed, travelTime)
+            
+            self.exploreCount += 1
+            print(f"Radius: {self.exploreRadius}")
+
+            ## If completed circle while exploring, increase radius
+            if self.exploreCount >= 2*math.pi*self.exploreRadius/(linearSpeed*travelTime):
+                self.exploreRadius += 0.25
+                self.exploreCount = 0
+
         return reply
         
 
@@ -103,7 +124,7 @@ def main():
     try:
         rclpy.spin(planner)
     except KeyboardInterrupt:
-        print("Shutting down.")
+        print(" Shutting down.")
 
 if __name__ == '__main__':
     main()
