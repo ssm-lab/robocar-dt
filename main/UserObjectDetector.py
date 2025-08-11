@@ -31,14 +31,14 @@ class ObjectDetector():
     def processFrame(self, buffer):
         """Receives buffer frame, converts to openCV format, runs object detection, and displays the frame.
         Returns the number of frames to skip to avoid lag and coordinates of bounding box"""
-        fps = 30 ## from hardware stats
+        fps = 30 # Set on the car's end
         allowedTime = 1/fps # Time allowed for processing each frame
         startTime = time.time()
 
         # Display processed frame
         buffer = bytes(buffer)
         image = cv2.imdecode(np.frombuffer(buffer, dtype=np.uint8), cv2.IMREAD_COLOR)
-        results = self.model.predict(image)[0]
+        results = self.model.predict(image, conf = 0.33)[0]
         image = results.plot()
         cv2.imshow("live", image)
 
@@ -47,8 +47,7 @@ class ObjectDetector():
             confScores = results.boxes.conf.tolist()
             maxConf = max(confScores)
             maxIndex = confScores.index(maxConf)
-            print(results.boxes.cls[maxIndex])
-            bbox = results.boxes.xyxy[maxIndex].tolist()
+            bbox = results.boxes.xyxy[maxIndex].tolist() 
         except:
             # In case of no detections
             bbox = None
@@ -70,13 +69,13 @@ class ObjectDetector():
         framesToSkip = 0
 
         while running:
-            # receives frames- drops without further processing if there is a lag
+            # Receives frames- drops without further processing if there is a lag
             for i in range (framesToSkip + 1):
                 _, buffer = self.imageHub.recv_jpg() 
 
             framesToSkip, bbox = self.processFrame(buffer)
 
-            # send bbox to car if car is ready
+            # Send bbox to car if car is ready
             if firstFrame:
                 self.req.send_json(bbox)
                 print(f"sent: {bbox}")
