@@ -88,9 +88,7 @@ class CarRoutePlanner(Node):
 
         # Move
         self.controller.move(linearSpeed, angularSpeed, travelTime)
-
-        if reply == "target reached":
-            self.controller.stop()
+        self.controller.stop()
 
         return (reply)
 
