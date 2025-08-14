@@ -10,10 +10,11 @@ __author__ = "Adwita Kashyap"
 __credits__ = "Istvan David"
 
 """
-Car subscriber: 
+Car route planner: 
 - Runs on the car's raspberry pi
-- Receives coordinates of bounding box
+- Receives coordinates of bounding box containing target object
 - Plans route and navigates to the given location
+- Explores surroundings if target object is not detected
 """
 
 class CarRoutePlanner(Node):
@@ -27,16 +28,16 @@ class CarRoutePlanner(Node):
         self.poller = zmq.Poller()
         self.poller.register(self.rep, zmq.POLLIN)
 
-        self.sub = self.create_subscription(Image, '/depth_cam/depth/image_raw', self.subscribe, 1)
+        self.sub = self.create_subscription(Image, '/depth_cam/depth/image_raw', self.communicate, 1)
         self.bridge = CvBridge()
 
         self.controller = CarController()
         self.exploreRadius = 0.25
         self.exploreCount = 0
-
         self.sawCube = False
 
-    def subscribe(self, msg):
+    def communicate(self, msg):
+        '''Receives bounding box data from digital twin. Sends back a reply with the status of the car's search for target'''
         items = dict(self.poller.poll(1))
 
         if self.rep in items:
@@ -53,6 +54,7 @@ class CarRoutePlanner(Node):
             self.rep.send_string(reply)
         
     def navigate(self, image, bbox):
+        '''Plans and executes route when target object is detected. Returns status of the vehicle's search'''
         cameraFOV = 58.4 # Camera's horizontal field of view (degrees)
         frameWidth = 640 # pixels
         linearSpeed = 0.3
@@ -75,12 +77,10 @@ class CarRoutePlanner(Node):
         if depthSum == 0:
             distance = 0.5
             reply = "navigating without depth"
-            print(reply)
         else:
             distance = depthSum/ (numOfElements*1000) - 0.2 #in m
             reply = "target reached"
-        print(f"Distance to object = {distance}")
-
+        
         # Calculate movement command
         turnRadius = distance/(2*math.sin(angle))
         travelTime = abs(2*turnRadius*angle/linearSpeed)
@@ -93,6 +93,7 @@ class CarRoutePlanner(Node):
         return (reply)
 
     def explore(self):
+        '''Runs when there are no object detections.'''
         if self.sawCube:
             reply = "target reached"
             self.controller.stop()
@@ -106,7 +107,6 @@ class CarRoutePlanner(Node):
             self.controller.move(linearSpeed, angularSpeed, travelTime)
             
             self.exploreCount += 1
-            print(f"Radius: {self.exploreRadius}")
 
             ## If completed circle while exploring, increase radius
             if self.exploreCount >= 2*math.pi*self.exploreRadius/(linearSpeed*travelTime):

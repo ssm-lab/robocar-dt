@@ -10,11 +10,11 @@ __author__ = "Adwita Kashyap"
 __credits__ = "Istvan David"
 
 """
-User subscriber: 
+Object detector: 
 - Runs on the user's device
-- Receives images from CarPublisher.py (pub/sub)
+- Receives images from physical twin (pub/sub)
 - Runs object detection using YOLO on received images
-- Sends coordinates of bounding box to CarRoutePlanner.py (req/rep)
+- Sends coordinates of bounding box back to physical twin (req/rep)
 """
 
 class ObjectDetector():
@@ -64,6 +64,7 @@ class ObjectDetector():
         return framesToSkip, bbox
 
     def communicate(self):
+        '''Receives camera data from physical twin and sends back coordinates of bounding box after running object detection'''
         running = True
         firstFrame = True
         framesToSkip = 0
@@ -75,7 +76,7 @@ class ObjectDetector():
 
             framesToSkip, bbox = self.processFrame(buffer)
 
-            # Send bbox to car if car is ready
+            # Send bbox if car is ready + receive reply
             if firstFrame:
                 self.req.send_json(bbox)
                 print(f"sent: {bbox}")
