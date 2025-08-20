@@ -1,35 +1,34 @@
-# Digital Twin of Raspberry Pi-Based Robot Car
-Status: In progress  
+# Digital Twin of an Autonomous Scale Vehicle  
 Author: Adwita Kashyap  
 Supervisor: Dr. Istvan David
 ## Introduction
-This research project aims to build a digital twin of a sensor-equipped robot car using real-time data streaming. The digital twin is a virtual replica that reflects the physical car’s behavior and sensor outputs, while also enabling control of the car based on that information.  
-A key feature of this system is its split design, which allows the robot to run ROS 2, while the user interacts with it from another computer without needing to install ROS. The two systems communicate in real time using ZeroMQ.
+This research project aims to build a digital twin of a sensor-equipped robot car using real-time data streaming. The digital twin is a virtual representation of the physical system's sensor outputs while also enabling control of the system. In this research project, we offload computation-intensive tasks such as object detection to the digital twin for faster processing.
 ## Software
 - Language: Python
+- ROS2 distribution: Humble
+- Object detection: YOLOv11 custom trained model
 - Communication Frameworks:
-    - ROS 2 Humble: Used for intra-robot communication
-    - ZeroMQ: Used for communication between the robot car and the user’s machine
+    - ZeroMQ: Used for communication of controls between the physical twin and the digital twin
+    - Image ZeroMQ: Used for communication of sensor data between the physical twin and the digital twin
 ## Hardware
 - Robot platform: Hiwonder JetAcker
-- Chassis: Ackermann
+- Chassis: Ackerman
 - Onboard computer: Raspberry Pi 5 (8GB)
 - Sensors:
     - SLAMTEC A1 LiDAR
-    - Orbbec Astra Pro Plus Depth Camera
+    - Orbbec Astra Pro Plus (RGB + depth camera)
 ## Setup
-This project requires code to be run on both the car's onboard computer and the user's remote system. Below is a breakdown of the relevant files.
-### Files to run on the car:
-- Publisher.py
-- Subscriber.py
+This project requires code to be run on both the vehicle's onboard computer and the user's remote system. Below is a breakdown of the relevant libraries and files.
+### Physical Twin:
+Install requirements listed in requirements/car.txt
+Put the following files, located in main, on the physical twin's computer: 
 - CarController.py
 - CarPublisher.py
-- CarSubscriber.py
-### Files to run on the user’s computer:
-- Publisher.py
-- Subscriber.py
-- UserPublisher.py
-- UserSubscriber.py
+- CarRoutePlanner.py
+### Digital Twin:
+Install requirements via ```pip install -r requirements/user.txt```.
+Run the following file, located in main, on the digital twin:
+- UserObjectDetector.py
 
 
 
