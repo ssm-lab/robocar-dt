@@ -1,0 +1,12 @@
+﻿Useful links:
+- GitHub for common messaging interfaces: https://github.com/ros2/common_interfaces
+- System Image (in case something goes wrong): https://drive.google.com/drive/folders/1AHq6HHsj45EjrRLCRt5UqAHEtro19OvD
+
+Other notes:
+- Ensure that the linear speed is high enough when turning at sharp angles, or the car may behave unexpectedly
+    - For example: If the linear speed = 0.1 m/s, trying to turn right with angular speed > 0.3 rad/s triggers some internal mechanism to automatically turn the wheels to the left and skid instead.
+- On the raspberry pi, ROS2 is installed within a docker container
+    - To access docker through SSH: docker exec -it jetacker_pi /bin/bash
+    - To copy files from outside the docker container to inside it: docker cp path-to-file jetacker_pi:path-to-destination
+- As far as I know, the car cannot connect to the internet. To copy files to the car so they’re accessible within the ROS system, copy as follows: 
+    - Computer → raspberry pi → docker container
